@@ -1,33 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import axios from "axios"
+import React from "react"
+import { youtube_parser } from "./utils";
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const inputUrl: any = React.useRef()
+  const [URLres, setURLres] = React.useState()
 
+  function send(event: { preventDefault: () => void }) {
+    event.preventDefault()
+    console.log(inputUrl.current.value)
+
+    const youtubeID = youtube_parser(inputUrl.current.value)
+
+    const options = {
+      method: 'get',
+      url: 'https://youtube-mp36.p.rapidapi.com/dl',
+      headers: {
+        'X-RapidAPI-Key': import.meta.env.VITE_RAPID_API_KEY,
+        'X-RapidAPI-Host': 'youtube-mp36.p.rapidapi.com'
+      },
+      params: {
+        id: youtubeID
+      }
+    }
+
+    axios(options)
+      .then(res => setURLres(res.data.link))
+      .catch(err => console.log(err))
+
+    inputUrl.current.value = '';
+  }
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className='content'>
+        <h1 className='title'>Youtube to MP3 converter</h1>
+        <p>Transform YouTube videos into mp3</p>
+
+        <form 
+        onSubmit={send}
+        className='form'>
+          <input
+          ref={inputUrl}
+          className="form_input"
+          placeholder='Paste a YouTube video URL link...'
+          type='text' />
+          <button
+          type='submit'
+          className='form_button'>Search</button>
+        </form>
+        {URLres ? <a target='_blank' rel="noreferrer" href={URLres} className="download">Download MP3</a> : ''}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }
